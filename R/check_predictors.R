@@ -19,7 +19,7 @@
 #' check_predictors(mtcars, response, explan, to_try)
 #'
 #' @export
-check_predictors <- function(df, response, existing_predictors, predictors_to_check) {
+check_predictors <- function(df, response, predictors, predictors_to_check) {
 
   predictors <- paste(predictors, collapse = "+")
   my_formula <- paste(response, "~", predictors)
@@ -44,17 +44,14 @@ check_predictors <- function(df, response, existing_predictors, predictors_to_ch
 #' and the exact change in Adjusted RSquared, rounded to 6 decimal places
 try_one_predictor <- function(df, partial_formula, new_predictor, crit_val) {
 
-  formula_up <- paste(my_formula, " + ", predictors_to_check[i])
+  formula_up <- paste(partial_formula, " + ", new_predictor)
 
   mod_alt <- lm(formula_up, data = df)
 
-  adj_r <- summary(modalt)$adj.r.squared
-  diff <- round((adj_r - critvalue), 6)
+  adj_r <- summary(mod_alt)$adj.r.squared
+  diff <- round((adj_r - crit_val), 6)
 
-  good_bad <- case_when(
-    diff > 0 ~ "Good",
-    diff <= 0 ~ "Bad"
-  )
+  good_bad <- ifelse(diff > 0, "Good", "Bad")
 
   glue::glue("{new_predictor} : {good_bad}, {diff}.")
 
