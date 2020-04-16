@@ -4,19 +4,19 @@
 \alias{OmVarBias}
 \title{Checks omitted variable bias in a variable between an initial regression and a longer one}
 \usage{
-OmVarBias(df, output, biasvar, omvars, startersvec)
+OmVarBias(df, response, biasvar, omvars, predictors)
 }
 \arguments{
-\item{df}{A dataframe R will pull the variables from to run the regressions}
+\item{df}{A dataframe}
 
-\item{output}{The dependent variable of the regressions, as a string}
+\item{response}{The dependent variable of the regressions, as a string}
 
 \item{biasvar}{The independent variable to be checked for bias}
 
 \item{omvars}{A vector of strings containing each independent variable used in the long model only,
 also known as the omitted variables}
 
-\item{startersvec}{A vector of strings containing each independent variable used in the initial model
+\item{predictors}{A vector of strings containing each independent variable used in the initial model
 and the long model}
 }
 \value{
