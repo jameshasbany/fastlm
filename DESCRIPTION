@@ -20,7 +20,11 @@ Imports:
     ggplot2,
     lmtest,
     magrittr,
-    purrr
+    purrr,
+    sandwich,
+    broom,
+    readr,
+    tibble
 Suggests: 
     testthat (>= 2.1.0),
     knitr,

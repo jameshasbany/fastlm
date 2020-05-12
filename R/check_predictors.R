@@ -1,4 +1,4 @@
-#' Starting with a base linear regression, checkvars takes turns adding a variables from a list of
+#' Starting with a base linear regression, check_predictors takes turns adding a variables from a list of
 #' variables to it one at a time, calculating the change in RSquared Adjusted for each variable addition to
 #' to the base regression, and showing the user if the variable was good or bad for the RSquared Adjusted
 #'
@@ -53,7 +53,7 @@ try_one_predictor <- function(df, partial_formula, new_predictor, crit_val) {
 
   good_bad <- ifelse(diff > 0, "Good", "Bad")
 
-  glue::glue("{new_predictor} : {good_bad}, {diff}.")
+  glue::glue("{new_predictor}: {good_bad}, {diff}.")
 
 }
 

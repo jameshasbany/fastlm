@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_predictors.R
 \name{check_predictors}
 \alias{check_predictors}
-\title{Starting with a base linear regression, checkvars takes turns adding a variables from a list of
+\title{Starting with a base linear regression, check_predictors takes turns adding a variables from a list of
 variables to it one at a time, calculating the change in RSquared Adjusted for each variable addition to
 to the base regression, and showing the user if the variable was good or bad for the RSquared Adjusted}
 \usage{
@@ -23,7 +23,7 @@ A sentence in the form of a vector with each tested variable, whether it was goo
 Adjusted RSquared, and the exact change in Adjusted RSquared, rounded to 6 decimal places
 }
 \description{
-Starting with a base linear regression, checkvars takes turns adding a variables from a list of
+Starting with a base linear regression, check_predictors takes turns adding a variables from a list of
 variables to it one at a time, calculating the change in RSquared Adjusted for each variable addition to
 to the base regression, and showing the user if the variable was good or bad for the RSquared Adjusted
 }

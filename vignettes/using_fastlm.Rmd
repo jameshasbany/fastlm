@@ -8,12 +8,165 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+library(knitr)
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
+hook_output <- knit_hooks$get("output")
+knit_hooks$set(output = function(x, options) {
+  lines <- options$output.lines
+  if (is.null(lines)) {
+    return(hook_output(x, options))  # pass to default hook
+  }
+  x <- unlist(strsplit(x, "\n"))
+  more <- "..."
+  if (length(lines)==1) {        # first n lines
+    if (length(x) > lines) {
+      # truncate the output, but add ....
+      x <- c(head(x, lines), more)
+    }
+  } else {
+    x <- c(more, x[lines], more)
+  }
+  # paste these lines together
+  x <- paste(c(x, ""), collapse = "\n")
+  hook_output(x, options)
+})
 ```
+```
+
+The 21st Century is the century of accessibility. Products like personal computers and smart phones have not only brought sophisticated technology to all corners of the world, but have more importantly empowered users with the ability to use it. Data analysis is increasingly becoming a staple of the business and academia worlds, but its accessibility has not always followed. Many students and industry specialists accross diciplines want to utilize the tools languages like R has at its disposal, but oftentimes cannot afford to dedicate the time and resources necessary to learn data science practices and their implementation in a programming language.
+
+Fastlm seeks to take important practices surrounding linear regression and streamline them, allowing even novice users access to powerful tools to further their aspirations, while keeping code condense.
+
+This document showcases the function this package has to offer, and utilizes the dataset "mtcars" preloaded with R.
+
 
 ```{r setup}
 library(fastlm)
+```
+
+
+##Model Selection
+
+Anyone can run a regression, but few can run a good regression; the distinction lies in model selection. Model selection is a complicated topic, with entire university classes devoted to it and complex R packages that can seem technically overwhelming and too sophisticated. 
+
+Model selection shouldn't involve running lots of regressions with slight variations just to figure out the best one, this package provides two packages that give the user infomation about variables in relation to each other at a glance.
+
+####check_predictors
+
+* check_predictors takes an existing regression and takes turns adding other variables individually to the regression, recording the change in the adjusted R squared, and reporting the results back to the user, so users can see out of a plethora of variables, which ones add to their model without overinflating variences.
+
+
+```{r}
+check_predictors(mtcars, response = "hp", predictors = c("cyl", "I(log(wt))"), predictors_to_check = c("qsec", "disp", "vs"))
+```
+
+In this example, instead of running 3 regressions with 3 summary statements clouding up space in the script and environment, just 1 line is necessary.
+
+####check_bias
+
+* check_bias takes an existing regression and checks whether a particular predictor has Omitted Variable Bias (OVB) by adding other variables and reporting how much the estimate changes from the short regression to the long one, allowing users to establish more accurate replationships between variables in a shorter amount of time.
+
+```{r}
+check_bias(mtcars, response = "hp", predictor_to_check = "cyl", other_predictors = "I(drat^2)", omitted_variables = c("gear", "carb"))
+```
+
+We can see that without controlling for "carb" in the regression, the estimate on "cyl" was 14 more than what it should have been indicating positive bias! Controlling for "gear" however, only reduced the estimate by less than 1, showing a small amount of negative bias.
+
+##Error Visualization
+
+Analysts can tell a lot about a regression from its errors, and it shouldn't take more than a single line to visualize them, allowing a user to quickly check regression errors at a glance.
+
+####simple_visual_residual
+
+* simple_visual_residual takes a simple regression and outputs a plot, allowing the user to explore possible logarithmic or exponential relationships between variables quickly.
+
+```{r}
+simple_visual_residual(mtcars, response = "mpg", predictor = "hp")
+```
+
+Our residuals look "U" shaped, indicating that there might be a quadratic relationship between "hp" and "mpg".
+
+####visual_residual
+
+* visual_residual takes a simple or multiple regression and displays a density plot of the residuals, allowing the user to check if errors are normally distributed
+
+```{r}
+visual_residual(mtcars, response = "mpg", predictors = c("hp", "wt", "cyl", "qsec"))
+```
+
+The residuals seem to be centered to the left of 0, perhaps there are more complex relationships at play than simple linear ones.
+
+##Simplifying procedures
+
+lm() is the most widely used linear regression function, and while it easy to use and effective at what it does, there are often situations when analysts want to use robust standard errors, or possibly employ bootstrapping. These function seek to make it easier for all users to run more advanced regressions 
+
+####corrected_errors
+
+* corrected_errors runs a regression while correcting for heteroskedasticity in the covarience matrix, the default estimator used is White's estimator, "HC", but users can choose from a variety of estimators, ("const", "HC", "HC1", "HC2",  "HC3"). See this paper for further explanations on the estimators:
+
+* MacKinnon J. G., White H. (1985), Some heteroskedasticity-consistent covariance matrix estimators with improved finite sample properties. Journal of Econometrics 29, 305-325
+
+```{r}
+corrected_errors(mtcars, response = "mpg", predictors = c("hp", "wt", "cyl", "qsec"), type = "HC")
+```
+
+####clustered_errors
+
+* clustered_errors runs a linear regression while clustering errors in the model around a particular variable for use in the covarience matrix, this is useful when dealing with data that is naturally grouped, such as a dataset tracking performance statistics for all MLB teams throughout a season.
+
+```{r}
+clustered_errors(mtcars, response = "mpg", predictors = c("hp", "wt", "qsec", "cyl"), cluster_predictor = "cyl")
+```
+
+####bootstrap_SE_df
+
+* bootstrap_SE_df randomly samples rows in the dataframe used for the regression with replacement and then runs a regression with the bootstrapped data, storing the standard errors of each regression in a dataframe so the user can conduct analysis. 
+
+```{r, output.lines=8}
+bootstrap_SE_df(mtcars, response = "mpg", predictors = c("hp", "wt", "cyl", "qsec"), number_of_reps = 1000)
+```
+
+####bootstrap_SE_lm
+
+* bootstrap_SE_lm randomly samples rows in the dataframe used for the regression with replacement and then runs a regression with the bootstrapped data, pulling the estimates from each regression, ultimately creating the covarience matrix by bootstrapping standard errors.
+
+```{r}
+bootstrap_SE_lm(mtcars, response = "mpg", predictors = c("hp", "wt", "cyl", "qsec"), number_of_reps = 1000)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r, include=FALSE}
+print("Thank you Professor Kelly Bodwin for all your mentorship, this has been an incredible experience and has inspired me to pursue econometrics using R in graduate school. Thank you Sacha Drousie for helping me with a few of these functions in their alpha stage, and for being a great friend.")
 ```
