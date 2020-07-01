@@ -1,16 +1,18 @@
-Package: fastlm
-Title: What the Package Does (One Line, Title Case)
+Package: quicklm
+Title: Quick checks and visualizations for linear models
 Version: 0.0.0.9000
 Authors@R: 
     c(person(given = "Hasbany",
            family = "James",
-           role = c("aut", "cre"),
-           email = "first.last@example.com"),
+           role = c("aut"),
     person(given = "Bodwin",
            family = "Kelly",
-           role = c("aut"),
+           role = c("aut", "cre"),
            email = "kelly@bodwin.us"))
-Description: What the package does (one paragraph).
+Description: Simple functions for checking and visualizing 
+linear model assumptions. Allows the user to simlutaneously test many variables for 
+model inclusion, and provides simple and clear output.  Plots residuals against
+many variables, and checks normality.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
