@@ -17,6 +17,7 @@
 #'     residual_histogram(my_lm)
 #'
 #' @import ggplot2
+#' @importFrom stats lm residuals shapiro.test median sd
 #'
 #' @export
 residual_histogram <- function(df, model){
@@ -40,7 +41,7 @@ residual_histogram <- function(df, model){
     geom_density(color = "cornflowerblue",
                  fill = "cornflowerblue",
                  alpha = 0.5) +
-    geom_function(fun = ~dnorm(., 0, sig),
+    stat_function(fun = ~dnorm(., 0, sig),
                   fill = "indianred",
                   color = "indianred",
                   alpha = 0.5,
@@ -74,6 +75,7 @@ residual_histogram <- function(df, model){
 #'
 #' @import ggplot2
 #' @import rlang
+#' @importFrom stats lm residuals fitted.values
 #'
 #' @export
 residual_scatterplots <- function(df, model, ...) {
@@ -136,6 +138,7 @@ residual_scatterplots <- function(df, model, ...) {
 #'
 #' @import ggplot2
 #' @import rlang
+#' @importFrom stats lm residuals
 #'
 #' @export
 residual_boxplots <- function(df, model, ...) {

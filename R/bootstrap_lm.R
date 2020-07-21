@@ -13,6 +13,8 @@
 #'
 #' bootstrap_lm(mtcars, mpg ~ cyl + am + hp)
 #'
+#' @importFrom stats lm
+#'
 #' @export
 bootstrap_lm <- function(df, model, n = 1000){
 

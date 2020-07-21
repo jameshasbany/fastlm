@@ -5,12 +5,15 @@
 #' @param df A dataframe
 #' @param model A model object of class "lm" or a valid formula.
 #' @param ... Any number of (unquoted) variables to be checked as possible additions to the model
-#' @return A sentence in the form of a vector with each tested variable, whether it was good or bad for
-#' Adjusted RSquared, and the exact change in Adjusted RSquared, rounded to 6 decimal places
+#' @return A tibble with each tested variable, whether it was good or bad for
+#' Adjusted RSquared, and the exact change in Adjusted RSquared.
 #'
 #' @examples
 #'
 #' check_predictors(mtcars, mpg ~ cyl, hp, am)
+#'
+#' @import dplyr
+#' @importFrom stats lm
 #'
 #' @export
 check_predictors <- function(df, model, ...) {
@@ -26,38 +29,75 @@ check_predictors <- function(df, model, ...) {
 
   crit_val <- summary(model)$adj.r.squared
 
-  purrr::map_chr(enquos(...), ~try_one_predictor(df, my_formula, !!(.x), crit_val))
+  to_try <- purrr::map_chr(ensyms(...), as_string)
+
+  new_rsqs <- purrr::map_dbl(to_try, ~summary(add_one_predictor_strings(df, my_formula, .x))$adj.r.squared)
+
+  results <- tibble::tibble(
+    new_var = to_try,
+    original_adj_R2 = rep(crit_val, length(to_try)),
+    new_adj_R2 = new_rsqs,
+    diff = new_adj_R2 - original_adj_R2,
+    keep = diff > 0
+  ) %>%
+    purrr::map_dfc(unname) %>%
+    arrange(desc(diff))
+
+  return(results)
 
 }
 
 
-#' Helper function that tries adding one predictor to a model and checks Adjusted R Squared.
+#' Helper function that adds one predictor to a model.
 #'
 #' @param df A dataframe
 #' @param model A model object of class "lm" or a valid formula.
-#' @param new_predictor A variable to try in the model (unquoted)
-#' @param crit_val The Adjusted R-Squared value of the original model.
+#' @param new_predictor An (unquoted) variable to try in the model
 #'
-#' @return A sentence stating whether the new variable was good or bad for the Adjusted RSquared,
-#' and the exact change in Adjusted RSquared, rounded to 6 decimal places
-try_one_predictor <- function(df, model, new_predictor, crit_val) {
+#' @return A new model object
+#'
+#' @importFrom stats lm formula
+#'
+#' @export
+add_one_predictor <- function(df, model, new_predictor) {
 
   if (!(class(model) %in% c("formula", "lm"))) {
     stop("Please supply either a formula or a model.")
+  } else if (class(model) == "formula") {
+    my_formula <- model
   } else if (class(model) == "lm") {
     my_formula <- model_to_formula(model)
   }
 
-  formula_up <- paste(my_formula, " + ", ensym(new_predictor))
+  new_predictor <- rlang::as_string(rlang::ensym(new_predictor))
 
-  mod_alt <- lm(formula_up, data = df)
+  new_formula <- formula(paste(deparse(my_formula), " + ", new_predictor))
 
-  adj_r <- summary(mod_alt)$adj.r.squared
-  diff <- round((adj_r - crit_val), 6)
+  new_model <- lm(new_formula, data = df)
 
-  good_bad <- ifelse(diff > 0, "Good", "Bad")
+  return(new_model)
 
-  glue::glue("{new_predictor}: {good_bad}, {diff}.")
+
+}
+
+
+#' Helper function that adds one predictor to a model sans quoting.
+#'
+#' @param df A dataframe
+#' @param my_formula A formula or string.
+#' @param new_predictor An (QUOTED) variable to try in the model.
+#'
+#' @importFrom stats lm formula
+#'
+#' @return A new model object
+add_one_predictor_strings <- function(df, my_formula, new_predictor) {
+
+  new_formula <- formula(paste(deparse(my_formula), " + ", new_predictor))
+
+  new_model <- lm(new_formula, data = df)
+
+  return(new_model)
+
 
 }
 

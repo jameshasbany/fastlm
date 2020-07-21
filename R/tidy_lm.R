@@ -10,7 +10,9 @@
 #'
 #' @examples
 #'
-#' tidy_lm(mtcars, mpg ~ cyl + am + hp, ...)
+#' tidy_lm(mtcars, mpg ~ cyl + am + hp)
+#'
+#' @importFrom stats lm
 #'
 #' @export
 tidy_lm <- function(df, model, ...){

@@ -11,6 +11,8 @@
 #'
 #' clustered_errors_lm(mtcars, mpg ~ hp + wt, cyl)
 #'
+#' @importFrom stats lm
+#'
 #' @export
 clustered_errors_lm <- function(df, model, cluster_predictor) {
 
@@ -41,7 +43,9 @@ clustered_errors_lm <- function(df, model, cluster_predictor) {
 #'
 #' @examples
 #'
-#' clustered_errors_lm(mtcars, mpg ~ hp + wt + cyl)
+#' corrected_errors_lm(mtcars, mpg ~ hp + wt, cyl)
+#'
+#' @importFrom stats lm
 #'
 #' @export
 corrected_errors_lm <- function(df, model, cluster_predictor, type = "HC") {

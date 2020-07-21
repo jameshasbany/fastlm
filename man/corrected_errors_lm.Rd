@@ -25,6 +25,6 @@ heteroskedasticity,  using the
 }
 \examples{
 
-clustered_errors_lm(mtcars, mpg ~ hp + wt + cyl)
+corrected_errors_lm(mtcars, mpg ~ hp + wt, cyl)
 
 }

@@ -2,7 +2,8 @@
 % Please edit documentation in R/residual_plots.R
 \name{residual_histogram}
 \alias{residual_histogram}
-\title{Visualizes the distribution of regression residuals, checking for normal distribution}
+\title{Plots the histogram of regression residuals to check for normality.
+Includes results of Shapiro-Wilk test in visualization.}
 \usage{
 residual_histogram(df, model)
 }
@@ -15,16 +16,17 @@ residual_histogram(df, model)
 A density histogram of the residuals
 }
 \description{
-Visualizes the distribution of regression residuals, checking for normal distribution
+Plots the histogram of regression residuals to check for normality.
+Includes results of Shapiro-Wilk test in visualization.
 }
 \examples{
 
 mtcars \%>\%
-    plot_residual_density(hp ~ cyl)
+    residual_histogram(hp ~ cyl)
 
 my_lm <- lm(hp ~ cyl, data = mtcars)
 
 mtcars \%>\%
-    plot_residual_density(my_lm)
+    residual_histogram(my_lm)
 
 }

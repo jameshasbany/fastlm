@@ -1,4 +1,3 @@
 library(testthat)
-library(fastlm)
 
-test_check("fastlm")
+test_check("quicklm")

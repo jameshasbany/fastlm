@@ -23,6 +23,6 @@ and gives output tidied by \code{broom::tidy()}
 }
 \examples{
 
-tidy_lm(mtcars, mpg ~ cyl + am + hp, ...)
+tidy_lm(mtcars, mpg ~ cyl + am + hp)
 
 }

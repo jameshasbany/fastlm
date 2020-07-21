@@ -57,7 +57,7 @@ Model selection is a complicated topic, with entire university classes devoted t
 `check_predictors()` takes an existing regression and individually adds new preictors. For each predictor, we record the change in the Adjusted R-squared, and report the results back to the user.
 
 ```{r}
-check_predictors(mtcars, hp ~ cyl + log(wt), predictors_to_check = c("qsec", "disp", "vs"))
+check_predictors(mtcars, hp ~ cyl + log(wt), mpg, am, disp)
 ```
 
 In this example, instead of running 3 regressions with 3 summary statements clouding up space in the script and environment, just 1 line is necessary, and the output is easily interpretable to a novice user.
@@ -66,11 +66,19 @@ In this example, instead of running 3 regressions with 3 summary statements clou
 
 `check_bias()` takes an existing regression and checks whether a particular predictor has Omitted Variable Bias (OVB).  Additional predictors are added to the model, and the change in estimate of the target predictor is reported.  This allows users to quickly screen for OVB.
 
+`check_bias_all()` checks for all independent variables in the original model.
+
 ```{r}
-check_bias(mtcars, response = "hp", predictor_to_check = "cyl", other_predictors = "I(drat^2)", omitted_variables = c("gear", "carb"))
+check_bias(mtcars, mpg ~ cyl + hp, 
+                      target_predictor = hp, 
+                      am, gear, carb)
+
+
+check_bias_all(mtcars, mpg ~ cyl + hp, 
+                      am, gear, carb)
 ```
 
-We can see that without controlling for `carb` in the regression, the estimate on `cyl` was 14 more than what it should have been indicating positive bias! Controlling for `gear` however, only reduced the estimate by less than 1, showing a small amount of negative bias.
+We can see that without controlling for `am` in the regression, the estimate on `cyl` was 1.14 more than what it should have been indicating positive bias! Controlling for `carb` however, only increased the estimate by less than 0.09, showing a small amount of negative bias.
 
 ## Error Visualization
 
