@@ -11,7 +11,7 @@
 #'
 #' @examples
 #'
-#' bootstrap_lm(mtcars, mpg ~ cyl + am + hp)
+#' bootstrap_lm(mtcars, mpg ~ cyl + am + hp, n = 10)
 #'
 #' @importFrom stats lm
 #'
