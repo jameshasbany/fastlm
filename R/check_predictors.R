@@ -3,32 +3,30 @@
 #' to the base regression, and showing the user if the variable was good or bad for the RSquared Adjusted
 #'
 #' @param df A dataframe
-#' @param response The dependent variable of the regressions, as a string
-#' @param predictors A vector of strings containing the independent variables already in the model
-#' @param predictors_to_check A vector of strings containing the independent variable to be checked
-#' as possible additions to the model
+#' @param model A model object of class "lm" or a valid formula.
+#' @param ... Any number of (unquoted) variables to be checked as possible additions to the model
 #' @return A sentence in the form of a vector with each tested variable, whether it was good or bad for
 #' Adjusted RSquared, and the exact change in Adjusted RSquared, rounded to 6 decimal places
 #'
 #' @examples
 #'
-#' response = c("mpg")
-#' explan <- c("am", "hp")
-#' to_try <- c("wt", "gear", "cyl")
-#'
-#' check_predictors(mtcars, response, explan, to_try)
+#' check_predictors(mtcars, mpg ~ cyl, hp, am)
 #'
 #' @export
-check_predictors <- function(df, response, predictors, predictors_to_check) {
+check_predictors <- function(df, model, ...) {
 
-  predictors <- paste(predictors, collapse = "+")
-  my_formula <- paste(response, "~", predictors)
+  if (!(class(model) %in% c("formula", "lm"))) {
+    stop("Please supply either a formula or a model.")
+  } else if (class(model) == "formula") {
+    my_formula <- model
+    model <- lm(my_formula, data = df)
+  } else if (class(model) == "lm") {
+    my_formula <- model_to_formula(model)
+  }
 
-  mod <- lm(my_formula, data = df)
+  crit_val <- summary(model)$adj.r.squared
 
-  crit_val <- summary(mod)$adj.r.squared
-
-  purrr::map_chr(predictors_to_check, ~try_one_predictor(df, my_formula, .x, crit_val))
+  purrr::map_chr(enquos(...), ~try_one_predictor(df, my_formula, !!(.x), crit_val))
 
 }
 
@@ -36,15 +34,21 @@ check_predictors <- function(df, response, predictors, predictors_to_check) {
 #' Helper function that tries adding one predictor to a model and checks Adjusted R Squared.
 #'
 #' @param df A dataframe
-#' @param partial_formula String representing the formula of the original model.
-#' @param new_predictor Name of new independent variable to check.
+#' @param model A model object of class "lm" or a valid formula.
+#' @param new_predictor A variable to try in the model (unquoted)
 #' @param crit_val The Adjusted R-Squared value of the original model.
 #'
 #' @return A sentence stating whether the new variable was good or bad for the Adjusted RSquared,
 #' and the exact change in Adjusted RSquared, rounded to 6 decimal places
-try_one_predictor <- function(df, partial_formula, new_predictor, crit_val) {
+try_one_predictor <- function(df, model, new_predictor, crit_val) {
 
-  formula_up <- paste(partial_formula, " + ", new_predictor)
+  if (!(class(model) %in% c("formula", "lm"))) {
+    stop("Please supply either a formula or a model.")
+  } else if (class(model) == "lm") {
+    my_formula <- model_to_formula(model)
+  }
+
+  formula_up <- paste(my_formula, " + ", ensym(new_predictor))
 
   mod_alt <- lm(formula_up, data = df)
 
