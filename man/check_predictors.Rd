@@ -6,21 +6,18 @@
 variables to it one at a time, calculating the change in RSquared Adjusted for each variable addition to
 to the base regression, and showing the user if the variable was good or bad for the RSquared Adjusted}
 \usage{
-check_predictors(df, response, predictors, predictors_to_check)
+check_predictors(df, model, ...)
 }
 \arguments{
 \item{df}{A dataframe}
 
-\item{response}{The dependent variable of the regressions, as a string}
+\item{model}{A model object of class "lm" or a valid formula.}
 
-\item{predictors}{A vector of strings containing the independent variables already in the model}
-
-\item{predictors_to_check}{A vector of strings containing the independent variable to be checked
-as possible additions to the model}
+\item{...}{Any number of (unquoted) variables to be checked as possible additions to the model}
 }
 \value{
-A sentence in the form of a vector with each tested variable, whether it was good or bad for
-Adjusted RSquared, and the exact change in Adjusted RSquared, rounded to 6 decimal places
+A tibble with each tested variable, whether it was good or bad for
+Adjusted RSquared, and the exact change in Adjusted RSquared.
 }
 \description{
 Starting with a base linear regression, check_predictors takes turns adding a variables from a list of
@@ -29,10 +26,6 @@ to the base regression, and showing the user if the variable was good or bad for
 }
 \examples{
 
-response = c("mpg")
-explan <- c("am", "hp")
-to_try <- c("wt", "gear", "cyl")
-
-check_predictors(mtcars, response, explan, to_try)
+check_predictors(mtcars, mpg ~ cyl, hp, am)
 
 }

@@ -1,4 +1,7 @@
-^.*\.Rproj$
+^quicklm\.Rproj$
 ^\.Rproj\.user$
-^LICENSE\.md$
 ^dev$
+^LICENSE\.md$
+^README\.Rmd$
+^cran_comments\.md$
+^\.travis\.yml$

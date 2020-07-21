@@ -1,0 +1,190 @@
+---
+title: "Basics of quicklm"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Basics of quicklm}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+library(knitr)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+hook_output <- knit_hooks$get("output")
+knit_hooks$set(output = function(x, options) {
+  lines <- options$output.lines
+  if (is.null(lines)) {
+    return(hook_output(x, options))  # pass to default hook
+  }
+  x <- unlist(strsplit(x, "\n"))
+  more <- "..."
+  if (length(lines)==1) {        # first n lines
+    if (length(x) > lines) {
+      # truncate the output, but add ....
+      x <- c(head(x, lines), more)
+    }
+  } else {
+    x <- c(more, x[lines], more)
+  }
+  # paste these lines together
+  x <- paste(c(x, ""), collapse = "\n")
+  hook_output(x, options)
+})
+```
+
+
+The purpose of `quicklm` is to streamline the primary important checks and calculations for a linear regression.  The package provides simple functions to verify and visualize model assumptions and to estimate standard errors with non-default approaches.
+
+This document showcases the function this package has to offer, and utilizes the dataset `mtcars`.
+
+
+```{r setup}
+library(quicklm)
+```
+
+
+## Model Selection
+
+Model selection is a complicated topic, with entire university classes devoted to it and complex R packages that can seem technically overwhelming to a novice or basic user. This package provides two functions that quickly check a set of possible predictors for inclusion in the model.
+
+### `check_predictors()`
+
+`check_predictors()` takes an existing regression and individually adds new preictors. For each predictor, we record the change in the Adjusted R-squared, and report the results back to the user.
+
+```{r}
+check_predictors(mtcars, hp ~ cyl + log(wt), mpg, am, disp)
+```
+
+In this example, instead of running 3 regressions with 3 summary statements clouding up space in the script and environment, just 1 line is necessary, and the output is easily interpretable to a novice user.
+
+### `check_bias()`
+
+`check_bias()` takes an existing regression and checks whether a particular predictor has Omitted Variable Bias (OVB).  Additional predictors are added to the model, and the change in estimate of the target predictor is reported.  This allows users to quickly screen for OVB.
+
+`check_bias_all()` checks for all independent variables in the original model.
+
+```{r}
+check_bias(mtcars, mpg ~ cyl + hp, 
+                      target_predictor = hp, 
+                      am, gear, carb)
+
+
+check_bias_all(mtcars, mpg ~ cyl + hp, 
+                      am, gear, carb)
+```
+
+We can see that without controlling for `am` in the regression, the estimate on `cyl` was 1.14 more than what it should have been indicating positive bias! Controlling for `carb` however, only increased the estimate by less than 0.09, showing a small amount of negative bias.
+
+## Error Visualization
+
+Analysts can tell a lot about a regression from visualizing its residuals. The following functions allow users to check common visualizations at a glance.
+
+### `residual_histogram()`
+
+`residual_histogram()` takes model and displays a density plot of the residuals, allowing the user to check if errors are normally distributed
+
+```{r, warning = FALSE}
+residual_histogram(mtcars, mpg ~ hp)
+```
+
+The residuals seem to be centered to the left of 0, perhaps there are more complex relationships at play than simple linear ones.
+
+
+### `residual_scatterplots()`
+
+`residual_scatterplots()` takes model and displays a scatterplot of the residuals and the fitted values.  The user may optionally supply additional numeric variables (whether or not these variables were in the original model) to display those scatterplots as well.
+
+```{r, warning = FALSE}
+residual_scatterplots(mtcars, mpg ~ hp + cyl, hp, wt)
+```
+
+### `residual_boxplots()`
+
+`residual_boxplots()` takes model and at least one categorical variable, and displays boxplots comparing the residuals across categories.
+
+```{r, warning = FALSE}
+residual_boxplots(mtcars, mpg ~ hp + cyl, am)
+```
+
+## Simplifying procedures
+
+`lm()` is the most widely used linear regression function, and while it easy to use and effective at what it does, there are often situations when analysts want to use robust standard errors, or possibly employ bootstrapping. These function seek to make it easier for all users to run more advanced regressions.
+
+### `tidy_lm()`
+
+`tidy_lm()` is a simple wrapper for `lm()` that is pipe-friendly and returns tidied output.
+
+```{r}
+## Original version
+lm(hp ~ cyl, mtcars)
+
+## Tidy version
+mtcars %>%
+  tidy_lm(hp ~ cyl)
+```
+
+
+### `corrected_errors_lm()`
+
+`corrected_errors_lm()` runs a regression while correcting for heteroskedasticity in the covariance matrix, the default estimator used is White's estimator, "HC", but users can choose from a variety of estimators, ("const", "HC", "HC1", "HC2",  "HC3"). See this paper for further explanations on the estimators:
+
+*MacKinnon J. G., White H. (1985), Some heteroskedasticity-consistent covariance matrix estimators with improved finite sample properties. Journal of Econometrics 29, 305-325*
+
+```{r}
+## Ordinary model
+mtcars %>%
+  tidy_lm(mpg ~ hp + cyl + wt)
+
+## Corrected error model
+mtcars %>%
+  corrected_errors_lm(mpg ~ hp + cyl + wt, type = "HC")
+```
+
+### `clustered_errors_lm()`
+
+`clustered_errors_lm()` runs a linear regression with standard error estimates based on clustered errors around a provided predictor.  See, e.g., [https://economics.mit.edu/files/13927](https://economics.mit.edu/files/13927) for more information on when this is appropriate.
+
+```{r}
+## Ordinary model
+mtcars %>%
+  tidy_lm(mpg ~ hp + cyl + wt)
+
+## Clustered error model
+mtcars %>%
+  clustered_errors_lm(mpg ~ hp + cyl + wt, cyl)
+```
+
+
+### `bootstrap_lm()`
+
+`bootstrap_lm()` randomly generates bootstrap samples from the data frame, then applies the regression model to each bootstrapped data frame.  It returns a list containing the coefficient estimates, standard errors, and model summary statistics for each bootstrap.
+
+```{r}
+boots <- bootstrap_lm(mtcars, mpg ~ hp + cyl, n = 100)
+
+str(boots)
+purrr::map(boots, head)
+```
+
+The output of `bootstrap_lm()` can be easily used to create bootstrap confidence intervals for the coefficients:
+
+```{r}
+quantile(boots$estimate$hp, c(.05, .95))
+```
+It can also be used to create a bootstrapped estimate of the variance-covariance matrix for the coefficients.  (This may be particularly useful when theoretical estimates are nearly singular.)
+
+```{r}
+## Theoretical estimate
+orig_lm <- lm(mpg ~ hp + cyl, mtcars)
+vcov(orig_lm)
+
+## Bootstrapped estimate
+cov(boots$estimate)
+```
+
+

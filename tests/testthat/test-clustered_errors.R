@@ -1,13 +1,8 @@
-test_that("clustered_errors works", {
+test_that("clustered_errors_lm works", {
 
-  expected_result <- readr::read_csv("df_for_clustered_errors.csv")
+  expected_result <- readr::read_csv("df_for_clustered_errors.csv")[]
 
-
-  response = c("mpg")
-  explan <- c("am", "hp")
-  cluster_predictor <- mtcars$cyl
-
-  actual_result <- clustered_errors(mtcars, response, explan, cluster_predictor)
+  actual_result <- clustered_errors_lm(mtcars, mpg ~ hp + wt, cyl)
 
 
   expect_equal(actual_result, expected_result)

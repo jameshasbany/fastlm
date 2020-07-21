@@ -1,18 +1,16 @@
 Package: quicklm
-Title: Quick checks and visualizations for linear models
-Version: 0.0.0.9000
+Title: Quick Checks and Visualizations for Linear Models
+Version: 0.0.1
 Authors@R: 
     c(person(given = "Hasbany",
            family = "James",
-           role = c("aut"),
+           role = c("aut", "cre"),
+           email = "jhasbany@calpoly.edu"),
     person(given = "Bodwin",
            family = "Kelly",
-           role = c("aut", "cre"),
+           role = c("aut"),
            email = "kelly@bodwin.us"))
-Description: Simple functions for checking and visualizing 
-linear model assumptions. Allows the user to simlutaneously test many variables for 
-model inclusion, and provides simple and clear output.  Plots residuals against
-many variables, and checks normality.
+Description: Simple functions for checking and visualizing linear model assumptions. Allows the user to simlutaneously test many variables for model inclusion, and provides simple and clear output.  Plots residuals against many variables, and checks normality.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -26,7 +24,12 @@ Imports:
     sandwich,
     broom,
     readr,
-    tibble
+    tibble,
+    modelr,
+    dplyr,
+    glue,
+    rlang,
+    stats
 Suggests: 
     testthat (>= 2.1.0),
     knitr,
